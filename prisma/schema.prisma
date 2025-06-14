@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?
+  apis      Api[]
+  createdAt DateTime @default(now())
+}
+
+model Api {
+  id         String       @id @default(cuid())
+  name       String
+  openApiUrl String
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  versions   ApiVersion[]
+  createdAt  DateTime     @default(now())
+  ApiDiff    ApiDiff[]
+}
+
+model ApiVersion {
+  id          String    @id @default(cuid())
+  api         Api       @relation(fields: [apiId], references: [id])
+  apiId       String
+  rawJson     String
+  diffSummary String
+  createdAt   DateTime  @default(now())
+  ApiDiff     ApiDiff[]
+}
+
+model ApiDiff {
+  id        String     @id @default(cuid())
+  apiId     String
+  api       Api        @relation(fields: [apiId], references: [id])
+  versionId String
+  version   ApiVersion @relation(fields: [versionId], references: [id])
+  diffJson  String
+  createdAt DateTime   @default(now())
+}
