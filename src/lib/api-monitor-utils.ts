@@ -4,10 +4,17 @@ import { writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 
-export async function fetchOpenApiSpec(url: string): Promise<any | null> {
+export async function fetchOpenApiSpec(
+  url: string,
+  apiKey?: string
+): Promise<any | null> {
   try {
     console.log("Fetching OpenAPI spec from:", url);
-    const response = await fetch(url);
+    const headers: HeadersInit = apiKey
+      ? { Authorization: `Bearer ${apiKey}` }
+      : {};
+    const response = await fetch(url, { headers });
+
     if (!response.ok) {
       console.error("Non-OK response:", response.status, response.statusText);
       throw new Error("Failed to fetch OpenAPI spec");

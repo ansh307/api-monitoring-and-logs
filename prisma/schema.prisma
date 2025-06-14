@@ -23,14 +23,31 @@ model User {
 }
 
 model Api {
-  id         String       @id @default(cuid())
+  id         String @id @default(cuid())
   name       String
   openApiUrl String
   userId     String
-  user       User         @relation(fields: [userId], references: [id])
-  versions   ApiVersion[]
-  createdAt  DateTime     @default(now())
-  ApiDiff    ApiDiff[]
+
+  apiKey    String? // Optional credential
+  endpoints String[] // Array of endpoint paths (like "/v1/charges")
+  user      User         @relation(fields: [userId], references: [id])
+  versions  ApiVersion[]
+  createdAt DateTime     @default(now())
+  ApiDiff   ApiDiff[]
+
+  SdkVersion SdkVersion[]
+}
+
+model SdkVersion {
+  id           String   @id @default(cuid())
+  apiId        String
+  sdkLanguage  String // e.g., "Node.js", "Python"
+  currentUsed  String? // The version the user is using
+  latest       String // Latest available version
+  releaseNotes String?
+  createdAt    DateTime @default(now())
+
+  api Api @relation(fields: [apiId], references: [id])
 }
 
 model ApiVersion {

@@ -14,7 +14,10 @@ export const monitorWorker = new Worker(
 
     for (const api of apis) {
       try {
-        const latestSpec = await fetchOpenApiSpec(api.openApiUrl);
+        const latestSpec = await fetchOpenApiSpec(
+          api.openApiUrl,
+          api.apiKey || undefined
+        );
         if (!latestSpec) {
           console.warn(
             `⚠️ Skipping ${api?.name || "No API Name"} — could not fetch spec`
@@ -22,12 +25,37 @@ export const monitorWorker = new Worker(
           continue;
         }
 
+        // ✅ Filter paths based on endpoints user has provided
+        if (api.endpoints.length > 0 && latestSpec.paths) {
+          const filteredPaths: Record<string, any> = {};
+          const missing: string[] = [];
+
+          for (const path of api.endpoints) {
+            if (latestSpec.paths[path]) {
+              filteredPaths[path] = latestSpec.paths[path];
+            } else {
+              missing.push(path);
+            }
+          }
+
+          latestSpec.paths = filteredPaths;
+
+          if (missing.length > 0) {
+            console.warn(
+              `⚠️ Some endpoints not found in ${api.name}:`,
+              missing
+            );
+          }
+        }
+
+        const newRaw = JSON.stringify(latestSpec);
+
         const previousVersion = await prisma.apiVersion.findFirst({
           where: { apiId: api.id },
           orderBy: { createdAt: "desc" },
         });
 
-        const newRaw = JSON.stringify(latestSpec);
+        // const newRaw = JSON.stringify(latestSpec);
         if (previousVersion?.rawJson === newRaw) continue;
 
         const newVersion = await prisma.apiVersion.create({

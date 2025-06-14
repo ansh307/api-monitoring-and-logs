@@ -48,7 +48,10 @@ export default async function MyApiPage({ params }: MyApiPageProps) {
 
       <h2 className="text-xl font-semibold mb-2">API Versions</h2>
       {api.versions.length === 0 ? (
-        <p className="text-gray-500">No versions found.</p>
+        <p className="text-gray-500 italic">
+          Monitoring has not detected any changes yet. Try triggering a monitor
+          manually.
+        </p>
       ) : (
         <div className="space-y-4">
           {api.versions.map((version) => (
@@ -69,6 +72,13 @@ export default async function MyApiPage({ params }: MyApiPageProps) {
                   {version.diffSummary || "No summary available"}
                 </span>
               </p>
+              {/* 
+              <Link
+                href={`/dashboard/myapis/${api.id}/versions/${version.id}/raw`}
+                className="text-blue-500 text-xs underline"
+              >
+                View Raw Spec
+              </Link> */}
 
               {version.ApiDiff.length > 0 && (
                 <div className="mt-4">

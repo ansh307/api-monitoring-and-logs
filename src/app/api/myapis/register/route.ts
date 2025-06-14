@@ -8,11 +8,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, openApiUrl } = await req.json();
+  const { name, openApiUrl, apiKey = null, endpoints = "" } = await req.json();
 
   if (!name || !openApiUrl) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
+
+  const endpointsArray =
+    typeof endpoints === "string"
+      ? endpoints
+          .split(",")
+          .map((e: string) => e.trim())
+          .filter(Boolean)
+      : Array.isArray(endpoints)
+      ? endpoints
+      : [];
 
   const existing = await prisma.api.findFirst({
     where: { openApiUrl, userId },
@@ -23,7 +33,7 @@ export async function POST(req: Request) {
   try {
     let user = await prisma.user.findUnique({ where: { id: userId } });
 
-    console.log("USERID::", userId, "USER::", user);
+    // console.log("USERID::", userId, "USER::", user);
 
     if (!user) {
       return NextResponse.json({ error: "User Not Found" }, { status: 400 });
@@ -34,6 +44,8 @@ export async function POST(req: Request) {
         name,
         openApiUrl,
         userId,
+        apiKey: apiKey,
+        endpoints: endpointsArray,
       },
     });
 
