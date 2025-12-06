@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import React from "react";
 import Link from "next/link";
+import { SDKVersionCard } from "@/components/SDKVersionCard";
 
 // Explicit type for MyApiPageProps
 interface MyApiPageProps {
@@ -30,6 +31,9 @@ export default async function MyApiPage({ params }: MyApiPageProps) {
           },
         },
       },
+      sdks: {
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
@@ -46,7 +50,18 @@ export default async function MyApiPage({ params }: MyApiPageProps) {
         Created at: {new Date(api.createdAt).toLocaleString()}
       </p>
 
-      <h2 className="text-xl font-semibold mb-2">API Versions</h2>
+      <h2 className="text-xl font-semibold mb-2 mt-6">SDK Versions</h2>
+      {api.sdks.length === 0 ? (
+        <p className="text-gray-500">No SDK info available.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {api.sdks.map((sdk) => (
+            <SDKVersionCard key={sdk.id} sdk={sdk} />
+          ))}
+        </div>
+      )}
+
+      <h2 className="text-xl font-semibold mt-6 mb-2">API Versions</h2>
       {api.versions.length === 0 ? (
         <p className="text-gray-500 italic">
           Monitoring has not detected any changes yet. Try triggering a monitor

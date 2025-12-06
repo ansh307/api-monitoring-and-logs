@@ -34,8 +34,7 @@ model Api {
   versions  ApiVersion[]
   createdAt DateTime     @default(now())
   ApiDiff   ApiDiff[]
-
-  SdkVersion SdkVersion[]
+  sdks      SdkVersion[]
 }
 
 model SdkVersion {
@@ -48,6 +47,8 @@ model SdkVersion {
   createdAt    DateTime @default(now())
 
   api Api @relation(fields: [apiId], references: [id])
+
+  @@unique([apiId, sdkLanguage])
 }
 
 model ApiVersion {
